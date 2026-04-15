@@ -1,0 +1,34 @@
+# 排除 Git 相关文件
+.git
+.gitignore
+.github
+
+# 排除文档文件
+README.md
+t.md
+
+# 排除备份文件
+Dockerfile.backup
+
+# 排除测试和开发文件
+*.test
+*.spec
+
+# 排除日志文件
+*.log
+
+# 排除临时文件
+tmp/
+temp/
+
+# 排除 IDE 文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 排除 macOS 系统文件
+.DS_Store
+
+# 排除其他构建产物
+*.dockerignore
