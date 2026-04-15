@@ -5,16 +5,18 @@ ARG BUILDKIT_INLINE_CACHE=1
 # 第一阶段：依赖准备和缓存
 FROM golang:1.25-alpine AS deps
 
+# 设置 Go 模块代理加速下载
+ENV GOPROXY=https://proxy.golang.org,direct
+ENV GOSUMDB=sum.golang.org
+
 # 设置工作目录
 WORKDIR /build
 
-# 预下载 Caddy 和插件依赖以利用缓存
-# 创建一个临时 go.mod 文件来下载依赖
+# 复制 go.mod 文件并预下载依赖
+COPY go.mod .
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
-    go mod init caddy-cached && \
-    go get github.com/caddyserver/caddy/v2@latest && \
-    go get github.com/caddyserver/cache-handler@latest
+    go mod download
 
 # 安装 xcaddy
 RUN --mount=type=cache,target=/go/pkg/mod \
