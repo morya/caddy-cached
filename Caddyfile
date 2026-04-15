@@ -1,0 +1,22 @@
+# 全局缓存配置
+{
+    cache {
+        ttl 120s
+        stale 60s
+    }
+}
+
+# 示例站点配置
+:80 {
+    # 启用缓存
+    cache
+    
+    # 响应示例
+    respond "Hello from Caddy with Cache Handler! Cached response will be served faster."
+    
+    # 日志
+    log {
+        output stdout
+        level INFO
+    }
+}
