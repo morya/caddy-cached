@@ -1,20 +1,38 @@
-# 使用多阶段构建
-# 第一阶段：构建 Caddy 二进制
-FROM golang:1.25-alpine AS builder
+# 使用多阶段构建优化版本
+# 构建参数，用于控制缓存
+ARG BUILDKIT_INLINE_CACHE=1
+
+# 第一阶段：依赖准备和缓存
+FROM golang:1.25-alpine AS deps
+
+# 设置工作目录
+WORKDIR /build
+
+# 预下载 Caddy 和插件依赖以利用缓存
+# 创建一个临时 go.mod 文件来下载依赖
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod init caddy-cached && \
+    go get github.com/caddyserver/caddy/v2@latest && \
+    go get github.com/caddyserver/cache-handler@latest
 
 # 安装 xcaddy
-RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
 
-# 创建工作目录
-WORKDIR /build
+# 第二阶段：构建 Caddy 二进制
+FROM deps AS builder
 
 # 复制构建脚本
 COPY build.sh .
 
-# 构建 Caddy 二进制
-RUN ./build.sh
+# 构建 Caddy 二进制，使用缓存
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    ./build.sh
 
-# 第二阶段：创建最终镜像
+# 第三阶段：创建最终镜像
 FROM alpine:3.21
 
 # 安装必要的运行时依赖
