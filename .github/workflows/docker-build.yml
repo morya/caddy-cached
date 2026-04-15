@@ -7,6 +7,14 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'Platforms to build'
+        type: choice
+        default: 'linux/amd64'
+        options:
+          - 'linux/amd64'
+          - 'linux/amd64,linux/arm64'
 
 env:
   REGISTRY: ghcr.io
@@ -51,7 +59,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          platforms: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.platforms || (startsWith(github.ref, 'refs/tags/v') && 'linux/amd64,linux/arm64' || 'linux/amd64') }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
