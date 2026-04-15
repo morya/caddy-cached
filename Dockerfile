@@ -1,6 +1,6 @@
 # 使用多阶段构建
 # 第一阶段：构建 Caddy 二进制
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # 安装 xcaddy
 RUN go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
